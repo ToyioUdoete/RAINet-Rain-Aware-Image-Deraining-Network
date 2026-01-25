@@ -1,14 +1,14 @@
-# Multi-stage Partitioned Transformer (MPT)
+# RAINet: Rain-Aware Image Deraining Network
 
-Pytorch Implementation of "Multi-Stage Partitioned Transformer for Efficient Image Deraining"
+Pytorch Implementation of "RAINet: Rain-Aware Image Deraining Network with Multi-Stage Image Decomposition"
 
 ## Introduction
-Images shot outdoors may capture rain, which can be troublesome to view the clean scene and significantly degrade their visual quality. Since rain scenes vary due to rain's density and wind directions, removing rain streaks from a rainy image is difficult. Thanks to the recent success of transformers in vision tasks, we propose a novel Multi-stage Partitioned Transformer (MPT) specifically for image deraining. MPT separates the attention module and multi-layer perceptron (MLP) to decompose the rain layer and the clean background from a rainy image. It utilizes the proposed global and local rain-aware attention mechanism to estimate the rain layer. In addition, we add atrous convolutions to MLP to aggregate contextualized background features to produce a clean background at multiple stages. MPT is a parameter-economical and computationally efficient deraining model that can effectively remove rain streaks from the input rainy image. Experimental results demonstrate that the proposed MPT performs favorably against state-of-the-art models in image deraining on benchmark datasets.
+Images shot outdoors may capture rain, which can be troublesome to view the clean scene and significantly degrade their visual quality. Since rain scenes vary due to rain's density and wind directions, removing rain streaks from a rainy image is difficult. Thanks to the recent success of transformers in vision tasks, we propose a novel Rain-Aware Image Deraining Network (RAINet) specifically for image deraining. RAINet separates the attention module and multi-layer perceptron (MLP) to decompose the rain layer and the clean background from a rainy image. It utilizes the proposed global and local rain-aware attention mechanism to estimate the rain layer. In addition, we add atrous convolutions to MLP to aggregate contextualized background features to produce a clean background at multiple stages. RAINet is a parameter-economical and computationally efficient deraining model that can effectively remove rain streaks from the input rainy image. Experimental results demonstrate that the proposed RAINet performs favorably against state-of-the-art models in image deraining on benchmark datasets.
 
-## Network Architecture of MPT
-![An architecture overview of the Multi-stage Partitioned Transformer (MPT).](Figures/MPT_overview-1.png)
+## Network Architecture of RAINet
+![An architecture overview of the Rain-Aware Image Deraining Network (RAINet).](Figures/MPT_overview-1.png)
 
-![Architecture of Partitioned Transformer Block (PTB).](Figures/PTB-1.png)
+![Architecture of Image Decomposition Block (IDB).](Figures/PTB-1.png)
 
 <details>
 <summary><strong>Performance comparison on the five test dataset in terms of deraining quality

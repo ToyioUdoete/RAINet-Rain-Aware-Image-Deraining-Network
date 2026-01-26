@@ -47,13 +47,13 @@ class TrainDataset(udata.Dataset):
 
         
         if 'Rain100H' in self.dataset or 'Rain100L' in self.dataset:
-            gt_file = os.path.join(self.gt_dir, 'no'+file_name)
+            gt_file = os.path.join(self.gt_dir, file_name)
         elif 'Rain800' in self.dataset:
             gt_file = os.path.join(self.gt_dir, file_name) #rain800
         # elif 'Rain1400' in self.dataset:
         #     gt_file = os.path.join(self.gt_dir, file_name.split('jpg')[0]+'png') #rain1400
         elif 'SPA-Data_6385' in self.dataset:
-            gt_file = os.path.join(self.gt_dir, 'no'+file_name)
+            gt_file = os.path.join(self.gt_dir, file_name)
         else:
             gt_file = os.path.join(self.gt_dir, file_name)
         if 'Rain1200' not in self.dataset:
@@ -113,7 +113,7 @@ class TestDataset(udata.Dataset):
         file_name = self.mat_files[idx % self.file_num]
 
         O = Image.open(os.path.join(self.root_dir, file_name)).copy()
-        B = Image.open(os.path.join(self.gt_dir, 'no'+file_name)).copy() #rain100L/SPA-Data_6385
+        B = Image.open(os.path.join(self.gt_dir, file_name)).copy() #rain100L/SPA-Data_6385
         # B = Image.open(os.path.join(self.gt_dir, file_name)).copy() #rain800
         # B = Image.open(os.path.join(self.gt_dir, file_name.split('jpg')[0]+'png')).copy() #rain1400
 
@@ -217,7 +217,7 @@ class TrainDataset_own(udata.Dataset):
         self.sample_num = length
 
         self.images_O = [Image.open(os.path.join(self.root_dir, file_name)).copy() for file_name in self.mat_files]
-        self.images_B = [Image.open(os.path.join(self.gt_dir, 'no'+file_name)).copy() for file_name in self.mat_files] #rain100L/SPA-Data_6385
+        self.images_B = [Image.open(os.path.join(self.gt_dir, file_name)).copy() for file_name in self.mat_files] #rain100L/SPA-Data_6385
         # self.images_B = [Image.open(os.path.join(self.gt_dir, file_name)).copy() for file_name in self.mat_files] # rain800
 
         # self.images_B = [Image.open(os.path.join(self.gt_dir, file_name.split('jpg')[0]+'png')).copy() for file_name in self.mat_files] # rain1400
@@ -239,7 +239,7 @@ class TrainDataset_own(udata.Dataset):
         input_img = cv2.merge([r, g, b])
         O,row,col= self.crop(input_img)
 
-        # gt_file = os.path.join(self.gt_dir, 'no'+file_name)
+        # gt_file = os.path.join(self.gt_dir, file_name)
 
         # B = cv2.imread(gt_file)
         b, g, r = cv2.split(B)

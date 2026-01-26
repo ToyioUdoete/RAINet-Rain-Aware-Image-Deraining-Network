@@ -1,143 +1,150 @@
 import cv2
 import os
 import argparse
-import glob
-import json
 import numpy as np
 import torch
 from torch.autograd import Variable
-from utils import *
-import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
-from Network import RAINet
 import time
+
+from utils import *
+from Network import RAINet
 from ptflops import get_model_complexity_info
 from skimage.metrics import peak_signal_noise_ratio as compare_psnr
 
-import multiprocessing
-import torch.distributed as dist
-from torch.utils.data.distributed import DistributedSampler
 
+# --------------------------------------------------
+# Arguments
+# --------------------------------------------------
+parser = argparse.ArgumentParser(description="RAINet Test (Single GPU)")
 
-parser = argparse.ArgumentParser(description="RCDNet_Test") # ablation Rain100H Rain1400 Rain800 SPA-Data_6385 Rain100L Rain1200
-parser.add_argument("--model_dir", type=str, default="./checkpoints/Rain100L_onlyLocal_v", help='path to model files')
-parser.add_argument("--data_path", type=str, default=r"/home/wenyi_peng/MPT/data/Rain100L/val/rain/", help='path to testing data')
-parser.add_argument("--gt_path", type=str, default=r"/home/wenyi_peng/MPT/data/Rain100L/val/norain/", help='path to testing data')
-parser.add_argument('--num_M', type=int, default=32, help='the number of rain maps')
-parser.add_argument('--num_Z', type=int, default=32, help='the number of dual channels')
-parser.add_argument('--T', type=int, default=4, help='the number of ResBlocks in every CSP_ResBlock')
-parser.add_argument('--S', type=int, default=20, help='the number of iterative stages in RAINet')
-parser.add_argument("--use_GPU", type=bool, default=True, help='use GPU or not')
-parser.add_argument("--gpu_id", type=str, default="0", help='GPU id')
-parser.add_argument("--local_rank", type=int, default=0)
-parser.add_argument("--save_path", type=str, default="./results/Rain100L_onlyLocal_v", help='path to derained results')
+parser.add_argument("--model_dir", type=str, default="./checkpoints/Rain100L_single",
+                    help="path to model files")
+parser.add_argument("--data_path", type=str,
+                    default="/home/magecliff/rainnet/dataset/Rain100L/rain",
+                    help="path to testing data")
+parser.add_argument("--gt_path", type=str,
+                    default="/home/magecliff/rainnet/dataset/Rain100L/norain",
+                    help="path to testing gt data")
+
+parser.add_argument("--num_M", type=int, default=32)
+parser.add_argument("--num_Z", type=int, default=32)
+parser.add_argument("--T", type=int, default=4)
+parser.add_argument("--S", type=int, default=20)
+
+parser.add_argument("--gpu_id", type=int, default=0)
+parser.add_argument("--save_path", type=str,
+                    default="./results/Rain100L_single",
+                    help="path to save results")
 
 opt = parser.parse_args()
+
+
+# --------------------------------------------------
+# Setup
+# --------------------------------------------------
+os.environ["CUDA_VISIBLE_DEVICES"] = str(opt.gpu_id)
+device = torch.device("cuda:0")
+
 torch.cuda.empty_cache()
-try:
-    os.makedirs(opt.save_path)
-except OSError:
-    pass
+os.makedirs(opt.save_path, exist_ok=True)
 
-if opt.use_GPU:
-    os.environ["CUDA_VISIBLE_DEVICES"]=opt.gpu_id
-    torch.cuda.set_device(opt.local_rank)
-    device = torch.device('cuda', opt.local_rank)
 
-    rank = opt.local_rank  # or: rank = int(os.environ['RANK'])
-    torch.distributed.init_process_group(
-        backend="nccl", init_method="env://"
-    )
-    torch.distributed.barrier()
-
+# --------------------------------------------------
+# Utils
+# --------------------------------------------------
 def print_network(net):
-    num_params = 0
-    for param in net.parameters():
-        num_params += param.numel()
-    print('Total number of parameters: %d' % num_params)
+    num_params = sum(p.numel() for p in net.parameters())
+    print("Total number of parameters:", num_params)
 
+
+# --------------------------------------------------
+# Main
+# --------------------------------------------------
 def main():
-    
-    # Build model
-    print('Loading model ...\n', opt.save_path)
-    model = RAINet(opt).cuda()
-    macs, params = get_model_complexity_info(model, (3, 64, 64), as_strings=True, flops_units="GMac", param_units="M",
-                                   print_per_layer_stat=False, verbose=True)
-    print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
-    print('{:<30}  {:<8}'.format('Number of parameters: ', params))
-    # assert False
+    print("Loading model...")
+
+    model = RAINet(opt).to(device)
+    model.eval()
+
+    macs, params = get_model_complexity_info(
+        model, (3, 64, 64),
+        as_strings=True,
+        flops_units="GMac",
+        param_units="M",
+        print_per_layer_stat=False
+    )
+
+    print(f"Computational complexity: {macs}")
+    print(f"Number of parameters: {params}")
     print_network(model)
-    if opt.use_GPU:
-        model = model.cuda()
-        if torch.cuda.device_count():
-            torch.cuda.set_device(opt.local_rank)
-            model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
-            model = nn.parallel.DistributedDataParallel(model, device_ids=[opt.local_rank], output_device=opt.local_rank, find_unused_parameters=True)
 
-    psnrs_ = []
-    for epoch in (range(80,20, -5)):
+    psnrs_all_epochs = []
+
+    for epoch in range(80, 20, -5):
         torch.cuda.empty_cache()
-        save_path = opt.save_path+'/epoch_'+str(epoch)+'/'
-        try:
-            os.makedirs(opt.save_path+'/epoch_'+str(epoch)+'/')
-        except OSError:
-            pass
-        psnrs = []
-        model.load_state_dict(torch.load(os.path.join(opt.model_dir, 'DerainNet_state_'+str(epoch)+'.pt'), map_location=device))
-        model.eval()
 
-        time_test = 0
+        epoch_save_dir = os.path.join(opt.save_path, f"epoch_{epoch}")
+        os.makedirs(epoch_save_dir, exist_ok=True)
+
+        ckpt_path = os.path.join(opt.model_dir, f"DerainNet_state_{epoch}.pt")
+        print(f"\nLoading checkpoint: {ckpt_path}")
+        model.load_state_dict(torch.load(ckpt_path, map_location=device))
+
+        psnrs = []
+        total_time = 0
         count = 0
-        for img_name in (os.listdir(opt.data_path)):
-            if is_image(img_name):
-                img_path = os.path.join(opt.data_path, img_name) 
-                # gt_img_path = os.path.join(opt.gt_path, img_name) #rain800
-                gt_img_path = os.path.join(opt.gt_path, 'no'+img_name)
-                # gt_img_path = os.path.join(opt.gt_path, img_name.split('jpg')[0]+'png') # rain1400
+
+        with torch.no_grad():
+            for img_name in os.listdir(opt.data_path):
+                if not is_image(img_name):
+                    continue
+
+                img_path = os.path.join(opt.data_path, img_name)
+                gt_path = os.path.join(opt.gt_path, img_name)
 
                 O = cv2.imread(img_path)
-                if 'Rain1200' in opt.data_path:
-                    h, w, c = O.shape
-                    width_cutoff = int(w/2)
-                    gt = O[:, width_cutoff:, :]
-                    O = O[:, :width_cutoff, :]
-                else:
-                    gt = cv2.imread(gt_img_path)
+                gt = cv2.imread(gt_path)
 
+                if O is None or gt is None:
+                    print(f"[WARN] Skipping {img_name} (missing file)")
+                    continue
+
+                # BGR -> RGB
                 b, g, r = cv2.split(O)
                 O = cv2.merge([r, g, b])
-                O = np.expand_dims(O.transpose(2, 0, 1), 0)
-                O = Variable(torch.Tensor(O))
-                if opt.use_GPU:
-                    O = O.cuda()
-                with torch.no_grad():
-                    torch.cuda.synchronize()
-                    start_time = time.time()
-                    outputs,R = model(O)
-                    torch.cuda.synchronize()
-                    end_time = time.time()
-                    dur_time = end_time - start_time
-                    time_test += dur_time
-                    out = outputs[-1]
 
-                    del O
-                    out = torch.clamp(out, 0., 255.)
-                    # print(img_name, ': ', dur_time)
-                if opt.use_GPU:
-                    save_out = np.uint8(out.data.cpu().numpy().squeeze())   #back to cpu
-                else:
-                    save_out = np.uint8(out.data.numpy().squeeze())
-                save_out = save_out.transpose(1, 2, 0)
-                b, g, r = cv2.split(save_out)
-                save_out = cv2.merge([r, g, b])
-                psnrs.append(compare_psnr(save_out, gt, data_range=255))
-                cv2.imwrite(os.path.join(save_path, img_name), save_out)
+                O = O.transpose(2, 0, 1)[None, ...]
+                O = torch.from_numpy(O).float().to(device)
 
+                torch.cuda.synchronize()
+                start = time.time()
+                outputs, _ = model(O)
+                torch.cuda.synchronize()
+                total_time += time.time() - start
+
+                out = torch.clamp(outputs[-1], 0., 255.)
+                out = out.cpu().numpy().squeeze().astype(np.uint8)
+                out = out.transpose(1, 2, 0)
+
+                # RGB -> BGR
+                b, g, r = cv2.split(out)
+                out = cv2.merge([r, g, b])
+
+                psnr = compare_psnr(out, gt, data_range=255)
+                psnrs.append(psnr)
+
+                cv2.imwrite(os.path.join(epoch_save_dir, img_name), out)
                 count += 1
-        print('Avg. time:', time_test/count)
-        print(epoch, " Avg. PSNR: ", sum(psnrs)/len(psnrs))
-        psnrs_.append(sum(psnrs)/len(psnrs))
-    print("MAX: ", max(psnrs_), np.argmax(psnrs_))
+
+        avg_psnr = sum(psnrs) / len(psnrs)
+        avg_time = total_time / max(count, 1)
+
+        print(f"Epoch {epoch} | Avg PSNR: {avg_psnr:.4f} | Avg Time: {avg_time:.4f}s")
+        psnrs_all_epochs.append(avg_psnr)
+
+    print("\nMAX PSNR:", max(psnrs_all_epochs),
+          "at epoch index", np.argmax(psnrs_all_epochs))
+
+
 if __name__ == "__main__":
     main()
-

@@ -106,9 +106,9 @@ def to_3d(x):
 def to_4d(x,h,w):
     return rearrange(x, 'b (h w) c -> b c h w',h=h,w=w)
 
-class DPA_v3(nn.Module):
+class GLRA(nn.Module):
     def __init__(self, inplanes):
-        super(DPA_v3, self).__init__()
+        super(GLRA, self).__init__()
 
         midplanes = int(inplanes//4)
         # Input conv

@@ -31,8 +31,8 @@ from ptflops import get_model_complexity_info
 from skimage.metrics import peak_signal_noise_ratio as compare_psnr
 
 parser = argparse.ArgumentParser() # Rain100L Rain800 Rain1400 SPA-Data_6385 Rain1200 Rain100H RainDS
-parser.add_argument("--data_path",type=str, default=r"/home/wenyi_peng/MPT/data/Rain100L/train/rain/",help='path to training input data')
-parser.add_argument("--gt_path",type=str, default=r"/home/wenyi_peng/MPT/data/Rain100L/train/norain/",help='path to training gt data')
+parser.add_argument("--data_path",type=str, default=r"/home/magecliff/rainnet/dataset/Rain100L/rain",help='path to training input data')
+parser.add_argument("--gt_path",type=str, default=r"/home/magecliff/rainnet/dataset/Rain100L/norain",help='path to training gt data')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=32)
 parser.add_argument('--batchSize', type=int, default=12, help='input batch size')
 parser.add_argument('--patchSize', type=int, default=64, help='the height / width of the input image to network')
@@ -140,7 +140,7 @@ def train_model(net, optimizer, lr_scheduler, datasets):
     print('Reach the maximal epochs! Finish training')
 
 if __name__ == '__main__':
-    netDerain = DPASKNet(opt).cuda()
+    netDerain = RAINet(opt).cuda()
     if torch.cuda.device_count():
         torch.cuda.set_device(opt.local_rank)
         netDerain = nn.SyncBatchNorm.convert_sync_batchnorm(netDerain)

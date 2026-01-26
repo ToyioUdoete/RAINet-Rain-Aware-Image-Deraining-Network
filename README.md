@@ -50,36 +50,28 @@ and model size (number of parameters in million).</strong> (click to expand) </s
 ## Installation
 The implementation is modified from "[RCDNet_simple]([https://github.com/VITA-Group/DeblurGANv2](https://github.com/hongwang01/RCDNet_simple))"
 ```
-git clone https://github.com/ytpeng-aimlab/RAINet-Rain-Aware-Image-Deraining-Network.git
-cd RAINet-Rain-Aware-Image-Deraining-Network
-conda create -n rainet python=3.9 -y
-conda activate rainet
-pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu118
-pip install tensorboardX scipy torchinfo einops scikit-image h5py ptflops numpy==1.26.4 opencv-python==3.4.18.65
+git clone https://github.com/WENYICAT/MPT.git
+cd MPT
+conda create -n Stripformer python=3.8
+source activate MPT
+conda install pytorch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu113 cudatoolkit=11.4 -c pytorch -c conda-forge
+pip install opencv-python tqdm ptflops glog scikit-image tensorboardX torchsummary
 ```
 ## Training
 *taking training on Rain100L (200 training pairs) as an example, then unzip to ./data. the unzipped file is like:</br>
 ```
-data_path = r"./data/Rain100L/train/rain/#.png"
-gt_path =  r"./data/Rain100L/train/norain/#.png"
+ data_path = r"./data/Rain100L/train/rain/rain-\*.png"
+ gt_path =  r"./data/Rain100L/train/norain/norain-\*.png"
 ```
 Note that if using other datasets, please change the file organization as this.</br>
 
 ### Training </br>
 ```
-python -m torch.distributed.launch --nproc_per_node=2 --master_port=25911 train_main_syn_parallel.py --use_gpu="0,1" --batchSize=12 --resume=-1 --model_dir="./checkpoints/Rain100L/"
-```
-or
-```
-python train_main.py 
+$ python -m torch.distributed.launch --nproc_per_node=2 --master_port=25911 train_main_syn_parallel.py --use_gpu="0,1" --batchSize=12 --resume=-1 --model_dir="./checkpoints/Rain100L/"
 ```
 ### Testing </br>
 ```
-$ python -m torch.distributed.launch --nproc_per_node=1 --master_port=25911 test_syn_parallel.py --use_gpu="0" --model_dir="./checkpoints/Rain100L/" --save_path="./results/Rain100L/"
-```
-or
-```
-python test.py 
+$ python -m torch.distributed.launch --nproc_per_node=1 --master_port=25911 test.py --use_gpu="0" --model_dir="./checkpoints/Rain100L/" --save_path="./results/Rain100L/"
 ```
 ## Pretrained Model
 The pre-trained are place it in `./weights/`, and modified the content is just like `train_main_syn_parallel.py --resume=1 `

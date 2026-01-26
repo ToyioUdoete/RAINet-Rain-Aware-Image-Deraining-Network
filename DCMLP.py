@@ -232,9 +232,9 @@ class Self_Attn(nn.Module):
         return out, attention
 
 
-class SKConv(nn.Module):
+class DCMLP(nn.Module):
     def __init__(self, features, M =3, r=2, L=32, MLP=True):
-        super(SKConv, self).__init__()
+        super(DCMLP, self).__init__()
         d = max(int(features / r), L)
         self.M = M
         self.features = features
@@ -293,7 +293,7 @@ if __name__ == "__main__":
     from thop import clever_format
     import time
     inputs = torch.Tensor(16, 35, 96, 96).cuda()
-    sk = SKConv(35, M =3, r=2, L=32).cuda()
+    sk = DCMLP(35, M =3, r=2, L=32).cuda()
     t0 = time.time()
     for i in range (100):
         sk(inputs)

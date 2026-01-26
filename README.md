@@ -69,7 +69,9 @@ Note that if using other datasets, please change the file organization as this.<
 ### Training </br>
 ```
 $ python -m torch.distributed.launch --nproc_per_node=2 --master_port=25911 train_main_syn_parallel.py --use_gpu="0,1" --batchSize=12 --resume=-1 --model_dir="./checkpoints/Rain100L/"
+```
 or
+```
 $ python train_main_syn_parallel.py --use_gpu="0"
 ```
 ### Testing </br>

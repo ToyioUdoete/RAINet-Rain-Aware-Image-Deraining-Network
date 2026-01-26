@@ -60,8 +60,8 @@ pip install tensorboardX scipy torchinfo einops scikit-image h5py ptflops numpy=
 ## Training
 *taking training on Rain100L (200 training pairs) as an example, then unzip to ./data. the unzipped file is like:</br>
 ```
-data_path = r"./data/Rain100L/train/rain/rain-\*.png"
-gt_path =  r"./data/Rain100L/train/norain/norain-\*.png"
+data_path = r"./data/Rain100L/train/rain/#.png"
+gt_path =  r"./data/Rain100L/train/norain/#.png"
 ```
 Note that if using other datasets, please change the file organization as this.</br>
 

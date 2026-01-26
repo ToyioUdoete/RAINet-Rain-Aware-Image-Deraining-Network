@@ -50,12 +50,13 @@ and model size (number of parameters in million).</strong> (click to expand) </s
 ## Installation
 The implementation is modified from "[RCDNet_simple]([https://github.com/VITA-Group/DeblurGANv2](https://github.com/hongwang01/RCDNet_simple))"
 ```
-git clone https://github.com/WENYICAT/MPT.git
-cd MPT
-conda create -n Stripformer python=3.8
-source activate MPT
+git clone https://github.com/ytpeng-aimlab/RAINet-Rain-Aware-Image-Deraining-Network.git
+cd RAINet-Rain-Aware-Image-Deraining-Network
+conda create -n RAINet python=3.8
+source activate RAINet
 conda install pytorch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu113 cudatoolkit=11.4 -c pytorch -c conda-forge
 pip install opencv-python tqdm ptflops glog scikit-image tensorboardX torchsummary
+conda install -c conda-forge libtiff
 ```
 ## Training
 *taking training on Rain100L (200 training pairs) as an example, then unzip to ./data. the unzipped file is like:</br>
@@ -68,6 +69,8 @@ Note that if using other datasets, please change the file organization as this.<
 ### Training </br>
 ```
 $ python -m torch.distributed.launch --nproc_per_node=2 --master_port=25911 train_main_syn_parallel.py --use_gpu="0,1" --batchSize=12 --resume=-1 --model_dir="./checkpoints/Rain100L/"
+or
+$ python train_main_syn_parallel.py --use_gpu="0"
 ```
 ### Testing </br>
 ```

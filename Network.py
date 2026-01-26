@@ -11,9 +11,9 @@ from BottleCSP import *
 
 from utils import *
 
-class MPT(nn.Module):
+class RAINet(nn.Module):
     def __init__(self, args):
-        super(MPT, self).__init__()
+        super(RAINet, self).__init__()
         self.iter  = args.S                                        # Stage number S includes the initialization process
         self.num_M = args.num_M
         self.num_Z = args.num_Z
@@ -86,7 +86,7 @@ class MPT(nn.Module):
             R = self.to_R(FR)
             ListR.append(R)
         
-            # ACMLP for clean background
+            # DCMLP for clean background
             B_hat = input - R
             B_mid = (1-self.etaB_S[i+1, :]/10) * B_hat + self.etaB_S[i+1, :]/10 * B
             input_concat = torch.cat((B_mid, FB), dim=1)
@@ -131,7 +131,7 @@ class Mnet(nn.Module):
 
                 CSP_Bottleneck(self.channels, self.channels, 3, activation_type= nn.ReLU),
 
-                CSP_GLRA(self.channels, self.channels, 1, activation_type= nn.ReLU)
+                SAE_GLRA(self.channels, self.channels, 1, activation_type= nn.ReLU)
                           ))
             else:
                 layers.append(nn.Sequential(
@@ -164,7 +164,7 @@ class Bnet(nn.Module):
 
                 CSP_Bottleneck(self.channels, self.channels, 3, activation_type= nn.ReLU),
                 
-                CSP_ACMLP(self.channels, self.channels, 1, activation_type= nn.ReLU)
+                SAE_DCMLP(self.channels, self.channels, 1, activation_type= nn.ReLU)
                           ))
             else:
                 layers.append(nn.Sequential(

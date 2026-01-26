@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Tuple, Type
 from GLRA import GLRA
-from ACMLP import ACMLP
+from DCMLP import DCMLP
 
 def autopad(kernel, padding=None):
     # PAD TO 'SAME'
@@ -98,7 +98,7 @@ class CSP_Bottleneck(nn.Module):
         out_1 = self.cv4(out_2)
         return out_1
 
-class CSP_GLRA(nn.Module):
+class SAE_GLRA(nn.Module):
     def __init__(self, input_channels, output_channels, bottleneck_blocks_num, activation_type: Type[nn.Module],
                  shortcut=True, depthwise=False, expansion=0.5):
         super().__init__()
@@ -127,7 +127,7 @@ class CSP_GLRA(nn.Module):
         out_1 = self.cv4(out_2)
         return out_1
 
-class CSP_ACMLP(nn.Module):
+class SAE_DCMLP(nn.Module):
     def __init__(self, input_channels, output_channels, bottleneck_blocks_num, activation_type: Type[nn.Module],
                  shortcut=True, depthwise=False, expansion=0.5):
         super().__init__()
@@ -145,7 +145,7 @@ class CSP_ACMLP(nn.Module):
         self.cv4 = Conv(hidden_channels+hidden_channels_evn, output_channels, 1, 1, activation_type)
         self.bn = nn.BatchNorm2d(hidden_channels+hidden_channels_evn)  # APPLIED TO CAT(CV2, CV3)
         self.act = nn.LeakyReLU(0.1, inplace=True)
-        self.m = nn.Sequential(*[ACMLP(hidden_channels_evn, M =3, r=2, L=32, MLP=False) 
+        self.m = nn.Sequential(*[DCMLP(hidden_channels_evn, M =3, r=2, L=32, MLP=False) 
                                 for _ in range(bottleneck_blocks_num)])
 
     def forward(self, x):

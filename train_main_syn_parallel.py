@@ -23,7 +23,7 @@ import torch.distributed as dist
 from torch.utils.data.distributed import DistributedSampler
 from tensorboardX import SummaryWriter
 from torch.optim.lr_scheduler import MultiStepLR
-from Network import MPT
+from Network import RAINet
 from torch.utils.data import DataLoader
 from DerainDataset import TrainDataset
 
@@ -40,7 +40,7 @@ parser.add_argument('--niter', type=int, default=100, help='total number of trai
 parser.add_argument('--num_M', type=int, default=32, help='the number of rain maps')
 parser.add_argument('--num_Z', type=int, default=32, help='the number of dual channels')
 parser.add_argument('--T', type=int, default=4, help='the number of ResBlocks in every CSP_ResBlock')
-parser.add_argument('--S', type=int, default=20, help='the number of iterative stages in MPT')
+parser.add_argument('--S', type=int, default=20, help='the number of iterative stages in RAINet')
 parser.add_argument('--resume', type=int, default=-1, help='continue to train from epoch')
 parser.add_argument("--milestone", type=int, default=[25,50,75], help="When to decay learning rate")
 parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate')

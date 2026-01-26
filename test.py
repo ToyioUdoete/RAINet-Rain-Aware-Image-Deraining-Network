@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from utils import *
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from Network import MPT
+from Network import RAINet
 import time
 from ptflops import get_model_complexity_info
 from skimage.metrics import peak_signal_noise_ratio as compare_psnr
@@ -26,7 +26,7 @@ parser.add_argument("--gt_path", type=str, default=r"/home/wenyi_peng/MPT/data/R
 parser.add_argument('--num_M', type=int, default=32, help='the number of rain maps')
 parser.add_argument('--num_Z', type=int, default=32, help='the number of dual channels')
 parser.add_argument('--T', type=int, default=4, help='the number of ResBlocks in every CSP_ResBlock')
-parser.add_argument('--S', type=int, default=20, help='the number of iterative stages in MPT')
+parser.add_argument('--S', type=int, default=20, help='the number of iterative stages in RAINet')
 parser.add_argument("--use_GPU", type=bool, default=True, help='use GPU or not')
 parser.add_argument("--gpu_id", type=str, default="0", help='GPU id')
 parser.add_argument("--local_rank", type=int, default=0)
@@ -60,7 +60,7 @@ def main():
     
     # Build model
     print('Loading model ...\n', opt.save_path)
-    model = MPT(opt).cuda()
+    model = RAINet(opt).cuda()
     macs, params = get_model_complexity_info(model, (3, 64, 64), as_strings=True, flops_units="GMac", param_units="M",
                                    print_per_layer_stat=False, verbose=True)
     print('{:<30}  {:<8}'.format('Computational complexity: ', macs))

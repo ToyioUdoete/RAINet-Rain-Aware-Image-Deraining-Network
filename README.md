@@ -57,6 +57,12 @@ source activate MPT
 conda install pytorch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu113 cudatoolkit=11.4 -c pytorch -c conda-forge
 pip install opencv-python tqdm ptflops glog scikit-image tensorboardX torchsummary
 ```
+or
+```
+conda env create -n RAINet -f env.yml
+conda activate RAINet
+```
+
 ## Training
 *taking training on Rain100L (200 training pairs) as an example, then unzip to ./data. the unzipped file is like:</br>
 ```

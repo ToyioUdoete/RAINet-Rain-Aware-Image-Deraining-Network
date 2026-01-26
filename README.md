@@ -13,7 +13,7 @@ Images shot outdoors may capture rain, which can be troublesome to view the clea
 <details>
 <summary><strong>Performance comparison on the five test dataset in terms of deraining quality
 and model size (number of parameters in million).</strong> (click to expand) </summary>
-<img src = "https://github.com/ytpeng-aimlab/Multi-Stage-Partitioned-Transformer-for-Efficient-Image-Deraining/blob/e9d32674d4d5be85e0aebb7c1818feed0fc34927/Figures/Quality%20and%20Model%20size%20Evaluations-1.png"> 
+<img src = "https://github.com/ytpeng-aimlab/RAINet-Rain-Aware-Image-Deraining-Network/blob/master/Figures/Quality%20and%20Model%20size%20Evaluations-1.png"> 
 </details>
 
 ## Dataset Descriptions 

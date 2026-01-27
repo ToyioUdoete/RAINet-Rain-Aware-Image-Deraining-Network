@@ -134,4 +134,15 @@ The pre-trained are place it in `./weights/`, and modified the content is just l
 
 ## Citation
 ```
+We kindly ask that you cite our work in any references or reuse:
+@article{peng2025rainet,
+  title={RAINet: Rain-Aware Image Deraining Network with Multi-Stage Image Decomposition},
+  author={Peng, Wen-Yi and Lin, Yi-Ting and Chen, Zihao and Li, Wei-Hua and Yoon, Aiden J and Peng, Yan-Tsung},
+  journal={Electronics Letters},
+  volume={61},
+  number={1},
+  pages={e70471},
+  year={2025},
+  publisher={Wiley Online Library}
+}
 ```

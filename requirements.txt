@@ -1,0 +1,1 @@
+gradio==3.50.2 numpy<2.0.0 Pillow opencv-python-headless scipy torch --index-url https://download.pytorch.org/whl/cpu torchvision --index-url https://download.pytorch.org/whl/cpu
